@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      background: transparent;
+    }
+  </style>
+</head>
+<body>
+
+<script>
+  // === Get URL Parameters ===
+  const urlParams = new URLSearchParams(window.location.search);
+  const character = urlParams.get('char');
+
+  // === Configuration ===
+  const basePath = "../assets/runner/";
+
+  // Only allow r2d2 and murloc
+  const validCharacters = ['r2d2', 'murloc'];
+
+  // If no char provided or not valid, do nothing
+  if (!character || !validCharacters.includes(character)) {
+    document.body.style.display = 'none';
+    console.log("Invalid or missing 'char' parameter. Runner not loaded.");
+    throw new Error("Invalid or missing 'char' parameter");
+  }
+
+  // If we're here, character is valid
+  const imageSrc = `${basePath}${character}.gif`;
+  const audioSrc = `${basePath}${character}.mp3`;
+
+  const fixedHeight = 200;      // All images will be exactly 200px tall
+  const bottomOffset = 0;       // Distance from bottom edge
+  const spriteVel = 4;          // Movement speed
+
+  function random(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+
+  // Create image element
+  const img = document.createElement("img");
+  img.src = imageSrc;
+  img.style.position = "absolute";
+  img.style.height = fixedHeight + "px";
+  img.style.pointerEvents = "none";
+
+  // Set initial horizontal direction
+  const direction = Math.random() < 0.5 ? 1 : -1; // 1 = left to right, -1 = right to left
+  const pos = {
+    x: direction === 1 ? -fixedHeight : window.innerWidth,
+    y: 0
+  };
+  const vel = { x: direction * spriteVel, y: 0 };
+
+  // Load image and calculate dimensions and vertical position
+  img.onload = () => {
+    // Preserve aspect ratio
+    const aspectRatio = img.naturalWidth / img.naturalHeight;
+    const width = fixedHeight * aspectRatio;
+    img.style.width = width + "px";
+
+    // Centered horizontally (optional), or use dynamic side entry
+    pos.x = direction === 1 ? -width : window.innerWidth;
+
+    // Position image so it rests on the bottom of the screen
+    pos.y = window.innerHeight - fixedHeight - bottomOffset;
+
+    img.style.top = pos.y + "px";
+    img.style.left = pos.x + "px";
+    document.body.appendChild(img);
+
+    animate(); // Start animation loop
+  };
+
+  img.onerror = () => {
+    console.error("Failed to load runner image:", imageSrc);
+  };
+
+  // Animation loop
+  function animate() {
+    pos.x += vel.x;
+
+    if (vel.x > 0 && pos.x > window.innerWidth) {
+      img.remove();
+      return;
+    } else if (vel.x < 0 && pos.x < -img.offsetWidth) {
+      img.remove();
+      return;
+    }
+
+    img.style.left = pos.x + "px";
+    img.style.transform = vel.x < 0 ? "scaleX(-1)" : "scaleX(1)";
+    requestAnimationFrame(animate);
+  }
+
+  // Play sound
+  const audio = new Audio(audioSrc);
+  audio.volume = 1.0;
+  audio.play().catch(e => console.error("Audio error:", e.message));
+</script>
+
+</body>
+</html>

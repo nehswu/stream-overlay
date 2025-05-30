@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      background: transparent;
+    }
+  </style>
+</head>
+<body>
+
+<div id="cucco" style="position: relative; width: 100%; height: 100%;"></div>
+
+<script>
+  // Prevent double execution
+  if (window.cuccoInitialized) {
+    console.log("Cucco overlay already initialized.");
+    document.body.style.display = 'none';
+    throw new Error("Already running");
+  }
+  window.cuccoInitialized = true;
+
+  // Cleanup previous timers/loops
+  if (window.cuccoAnimationFrame) cancelAnimationFrame(window.cuccoAnimationFrame);
+  if (window.cuccoAudioTimer) clearTimeout(window.cuccoAudioTimer);
+
+  // === Simulation Variables ===
+  const movers = [];
+  const numImages = 10;
+  const raidDuration = 12000; // 8 seconds
+  let audioPlaying = false;
+  let raidStartTime = 0;
+
+  // Asset paths
+  const sprite1 = "../assets/cucco/cucco1.gif";
+  const sprite2 = "../assets/cucco/cucco2.gif";
+  const sound1 = "../assets/cucco/cucco1.wav"; // Intro
+  const sound2 = "../assets/cucco/cucco2.wav"; // Looping
+
+  // Random helpers
+  function random(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+
+  function randomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  // Initialize moving objects
+  function initializeMovers() {
+    for (let i = 0; i < numImages; i++) {
+      for (let imgIndex = 0; imgIndex < 2; imgIndex++) {
+        const img = document.createElement('img');
+        img.src = imgIndex === 0 ? sprite1 : sprite2;
+        img.style.position = 'absolute';
+        img.style.width = '112px';
+        img.style.height = 'auto';
+        img.style.pointerEvents = 'none';
+        document.getElementById('cucco').appendChild(img);
+
+        let edge = randomInt(0, 3);
+        let angle = random(Math.PI / 4, 3 * Math.PI / 4);
+        let pos = { x: 0, y: 0 };
+        let vel = { x: 0, y: 0 };
+        let speed = random(1, 6);
+
+        if (edge === 0) {
+          pos.x = random(0, window.innerWidth);
+          pos.y = 0;
+          angle = random(Math.PI / 4, 3 * Math.PI / 4);
+          vel.x = Math.cos(angle) * speed;
+          vel.y = Math.sin(angle) * speed;
+        } else if (edge === 1) {
+          pos.x = window.innerWidth;
+          pos.y = random(0, window.innerHeight);
+          angle = random(Math.PI / 4, 3 * Math.PI / 4) + Math.PI / 2;
+          vel.x = Math.cos(angle) * speed;
+          vel.y = Math.sin(angle) * speed;
+        } else if (edge === 2) {
+          pos.x = random(0, window.innerWidth);
+          pos.y = window.innerHeight;
+          angle = random(Math.PI / 4, 3 * Math.PI / 4) + Math.PI;
+          vel.x = Math.cos(angle) * speed;
+          vel.y = Math.sin(angle) * speed;
+        } else {
+          pos.x = 0;
+          pos.y = random(0, window.innerHeight);
+          angle = random(Math.PI / 4, 3 * Math.PI / 4) + 3 * Math.PI / 2;
+          vel.x = Math.cos(angle) * speed;
+          vel.y = Math.sin(angle) * speed;
+        }
+
+        img.style.left = pos.x + 'px';
+        img.style.top = pos.y + 'px';
+
+        movers.push({ img, pos, vel, imgIndex });
+      }
+    }
+  }
+
+  // Animation loop
+  function animate() {
+    for (let mover of movers) {
+      mover.pos.x += mover.vel.x;
+      mover.pos.y += mover.vel.y;
+
+      if (mover.pos.x > window.innerWidth) mover.pos.x -= window.innerWidth;
+      if (mover.pos.x < 0) mover.pos.x += window.innerWidth;
+      if (mover.pos.y > window.innerHeight) mover.pos.y -= window.innerHeight;
+      if (mover.pos.y < 0) mover.pos.y += window.innerHeight;
+
+      mover.img.style.left = mover.pos.x + 'px';
+      mover.img.style.top = mover.pos.y + 'px';
+      mover.img.style.transform = mover.vel.x < 0 ? 'scaleX(-1)' : 'scaleX(1)';
+    }
+
+    window.cuccoAnimationFrame = requestAnimationFrame(animate);
+  }
+
+  // Audio management
+  function startAudio() {
+    playIntroSound();
+  }
+
+  function playIntroSound() {
+    const sound = new Audio(sound1);
+    sound.volume = 0.8;
+    sound.playbackRate = 1.0;
+
+    sound.play().catch(e => {
+      console.error("Error playing intro audio:", e);
+      startMainAudioAndAnimation();
+    });
+
+    sound.onended = () => {
+      startMainAudioAndAnimation();
+    };
+  }
+
+  function startMainAudioAndAnimation() {
+    audioPlaying = true;
+    raidStartTime = Date.now();
+    playSound();
+    animate();
+    setupRaidEndTimer(); // Start timer to end raid after 8 seconds
+  }
+
+  function playSound() {
+    if (!audioPlaying) return;
+
+    const elapsed = Date.now() - raidStartTime;
+    if (elapsed >= raidDuration) {
+      audioPlaying = false;
+      return;
+    }
+
+    const sound = new Audio(sound2);
+    sound.volume = random(0.5, 1.0);
+    sound.playbackRate = random(0.9, 1.15);
+
+    sound.play().catch(e => {
+      console.error("Error playing audio:", e);
+    });
+
+    sound.onended = () => {
+      const currentElapsed = Date.now() - raidStartTime;
+      if (currentElapsed >= raidDuration) {
+        audioPlaying = false;
+        return;
+      }
+
+      const delay = random(300, 1000);
+      window.cuccoAudioTimer = setTimeout(playSound, delay);
+    };
+  }
+
+  function setupRaidEndTimer() {
+    setTimeout(() => {
+      console.log("Ending cucco raid after 8 seconds.");
+
+      // Stop animation
+      if (window.cuccoAnimationFrame) {
+        cancelAnimationFrame(window.cuccoAnimationFrame);
+      }
+
+      // Stop audio
+      if (window.cuccoAudioTimer) {
+        clearTimeout(window.cuccoAudioTimer);
+      }
+      audioPlaying = false;
+
+      // Optional: Remove all images from screen
+      movers.forEach(mover => {
+        mover.img.remove();
+      });
+
+      // You can also hide the container if needed
+      // document.body.style.display = 'none';
+    }, raidDuration);
+  }
+
+  // Set document styles
+  document.body.style.margin = '0';
+  document.body.style.padding = '0';
+  document.body.style.overflow = 'hidden';
+  document.body.style.background = 'transparent';
+
+  // Start the simulation
+  initializeMovers();
+  startAudio();
+</script>
+
+</body>
+</html>

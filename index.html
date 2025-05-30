@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Modular Overlay System</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        width: 100vw;
+        height: 100vh;
+        background: transparent;
+        position: relative;
+      }
+      iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+        pointer-events: none;
+      }
+    </style>
+    <link rel="icon" href="data:," />
+    <!-- Prevents favicon 404 -->
+  </head>
+  <body>
+    <!-- Dynamic Overlays Will Be Injected Here -->
+    <div id="overlayContainer"></div>
+
+    <!-- Placeholder if no overlay is active -->
+    <div id="placeholder" style="display: block"></div>
+
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+
+      // Map query params to overlay files
+      const overlayMap = {
+        mic: "overlays/mic-mute.html",
+        runner: "overlays/runner.html",
+        cucco: "overlays/cucco.html", // <-- Add this line
+      };
+
+      Object.entries(overlayMap).forEach(([param, filePath]) => {
+        if (urlParams.get(param) === "true") {
+          // Append full query string to iframe src
+          const iframe = document.createElement("iframe");
+          iframe.src = `${filePath}?${urlParams.toString()}`;
+
+          // Hide placeholder
+          const placeholder = document.getElementById("placeholder");
+          if (placeholder) placeholder.style.display = "none";
+
+          document.body.appendChild(iframe);
+        }
+      });
+    </script>
+  </body>
+</html>

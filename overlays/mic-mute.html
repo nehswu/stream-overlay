@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      background: transparent;
+    }
+
+    .mic-container {
+      position: absolute;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      width: 100px;
+      height: 100px;
+    }
+
+    .mic-container img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+    }
+
+    @keyframes pulse {
+      0% { transform: translateX(-50%) scale(1); }
+      50% { transform: translateX(-50%) scale(1.25); }
+      100% { transform: translateX(-50%) scale(1); }
+    }
+
+    .mic-container.pulse {
+      animation: pulse 2.5s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="mic-container pulse">
+    <img src="../assets/mic-mute.png" alt="Mic Mute" />
+  </div>
+
+</body>
+</html>
