@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <title>Modular Overlay System</title>
   <style>
-    html, body {
+    html,
+    body {
       margin: 0;
       padding: 0;
       overflow: hidden;
@@ -24,111 +26,112 @@
     }
   </style>
 </head>
+
 <body>
 
-<div id="overlayContainer"></div>
-<div id="placeholder" style="display: block;"></div>
+  <div id="overlayContainer"></div>
+  <div id="placeholder" style="display: block;">No overlay active</div>
 
-<script>
-  let overlayMap = null;
+  <script>
+    let overlayMap = null;
 
-  // Load overlay map from external JSON
-  async function loadOverlayMap() {
-    try {
-      const response = await fetch('overlays/config.json');
-      if (response.ok) {
-        overlayMap = await response.json();
-        console.log("[index.html] Loaded private config.json");
-      } else {
-        console.warn("[index.html] Using default overlayMap");
+    async function loadOverlayMap() {
+      try {
+        const response = await fetch('config.json');
+        if (response.ok) {
+          overlayMap = await response.json();
+        } else {
+          overlayMap = {
+            'mic': 'overlays/mic-mute.html',
+            'runners': 'overlays/runners.html',
+            'cucco': 'overlays/cucco.html'
+          };
+        }
+      } catch (e) {
         overlayMap = {
           'mic': 'overlays/mic-mute.html',
           'runners': 'overlays/runners.html',
           'cucco': 'overlays/cucco.html'
         };
       }
-    } catch (e) {
-      console.warn("[index.html] No custom config.json found – using fallback", e);
-      overlayMap = {
-        'mic': 'overlays/mic-mute.html',
-        'runners': 'overlays/runners.html',
-        'cucco': 'overlays/cucco.html'
-      };
     }
-  }
 
-  const loadedOverlays = {};
-  let wsReady = false;
+    const loadedOverlays = {};
 
-  function sendOverlayMessage(name, message) {
-    const iframe = loadedOverlays[name];
-    if (!iframe || !iframe.contentWindow) return;
+    function sendOverlayMessage(name, message) {
+      const iframe = loadedOverlays[name];
+      if (!iframe || !iframe.contentWindow) return;
 
-    try {
-      iframe.contentWindow.postMessage(message, '*');
-    } catch (e) {
-      console.error("Error posting message:", e.message);
+      try {
+        iframe.contentWindow.postMessage(message, '*');
+      } catch (e) {
+        console.error("Error posting message:", e.message);
+      }
     }
-  }
 
-  function preloadOverlay(name) {
-    const iframe = document.createElement('iframe');
-    iframe.id = `overlay-${name}`;
-    iframe.name = name;
-    iframe.style.zIndex = 1000 + Object.keys(loadedOverlays).length;
-    iframe.src = overlayMap[name];
+    // WebSocket setup
+    const ws = new WebSocket('ws://localhost:3000');
 
-    iframe.onload = () => {
-      loadedOverlays[name] = iframe;
-      console.log(`[index.html] Overlay loaded: ${name}`);
+    ws.onmessage = function (event) {
+      try {
+        const data = JSON.parse(event.data);
+        const overlaysToShow = Array.isArray(data.show) ? data.show : [];
+
+        console.log("[index.html] Received trigger:", data);
+
+        // Only send to requested overlays
+        overlaysToShow.forEach(name => {
+          if (overlayMap[name]) {
+            const payload = {
+              overlay: name,
+              show: true,
+              data: data.data?.[name] || null
+            };
+
+            sendOverlayMessage(name, payload);
+          }
+        });
+
+        // Optional: Clear unlisted overlays only if clear: true
+        if (data.clear === true) {
+          Object.keys(overlayMap).forEach(name => {
+            if (!overlaysToShow.includes(name)) {
+              sendOverlayMessage(name, { overlay: name, show: false });
+            }
+          });
+        }
+
+        // Show placeholder if nothing is showing
+        document.getElementById('placeholder').style.display =
+          overlaysToShow.length > 0 ? 'none' : 'block';
+
+      } catch (e) {
+        console.error("Error parsing message", e);
+      }
     };
 
-    document.body.appendChild(iframe);
-  }
+    // Preload overlays on DOM load
+    function preloadOverlay(name) {
+      const iframe = document.createElement('iframe');
+      iframe.id = `overlay-${name}`;
+      iframe.name = name;
+      iframe.style.zIndex = 1000 + Object.keys(loadedOverlays).length;
+      iframe.src = overlayMap[name];
 
-  // Connect to WebSocket
-  const ws = new WebSocket('ws://localhost:3000');
+      iframe.onload = () => {
+        loadedOverlays[name] = iframe;
+        console.log(`[index.html] Overlay loaded: ${name}`);
+      };
 
-  ws.onmessage = function(event) {
-    try {
-      const data = JSON.parse(event.data);
-      const overlaysToShow = Array.isArray(data.show) ? data.show : [];
-
-      console.log("[index.html] Received trigger:", data);
-
-      // Send to each overlay
-      Object.keys(overlayMap).forEach(name => {
-        const show = overlaysToShow.includes(name);
-        const payload = {
-          overlay: name,
-          show: show,
-          data: data.data?.[name] || null
-        };
-
-        sendOverlayMessage(name, payload);
-      });
-
-      // Show placeholder if no overlays are visible
-      document.getElementById('placeholder').style.display =
-        overlaysToShow.length > 0 ? 'none' : 'block';
-
-    } catch (e) {
-      console.error("Error parsing WebSocket message", e);
+      document.body.appendChild(iframe);
     }
-  };
 
-  ws.onopen = () => {
-    console.log("[index.html] WebSocket connected");
-    wsReady = true;
-  };
-
-  // Load overlay map first, then preload overlays
-  window.addEventListener('DOMContentLoaded', async () => {
-    await loadOverlayMap();
-
-    Object.keys(overlayMap).forEach(preloadOverlay);
-  });
-</script>
+    window.addEventListener('DOMContentLoaded', async () => {
+      await loadOverlayMap();
+      Object.keys(overlayMap).forEach(preloadOverlay);
+    });
+  </script>
 
 </body>
+
 </html>

@@ -46,13 +46,20 @@
 </div>
 
 <script>
+  let micVisible = false;
   const mic = document.getElementById('micMute');
 
   window.addEventListener('message', function(event) {
-    const msg = event.data;
+    try {
+      const msg = event.data;
 
-    if (msg.overlay === 'mic') {
-      mic.style.display = msg.show ? 'block' : 'none';
+      if (msg.overlay === 'mic') {
+        micVisible = !micVisible;
+        if (micVisible) mic.style.display = 'block';
+        else mic.style.display = 'none';
+      }
+    } catch (e) {
+      console.error("Error handling postMessage:", e);
     }
   });
 </script>

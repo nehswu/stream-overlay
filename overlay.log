@@ -1,0 +1,353 @@
+Serving static files from: /home/nehs/repos/stream-overlay
+Server running at http://localhost:3000/
+WebSocket client connected
+Received trigger: { show: [ 'mic' ], clear: false }
+WebSocket client connected
+Received trigger: {
+  show: [ 'mic' ],
+  data: { runners: { char: '', charVelocity: 5 }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'mic' ],
+  data: { runners: { char: '', charVelocity: 5 }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'mic' ],
+  data: { runners: { char: '', charVelocity: 5 }, clear: 'true' }
+}
+Received trigger: {
+  show: [ 'mic' ],
+  data: { runners: { char: '', charVelocity: 5 }, clear: 'true' }
+}
+Received trigger: {
+  show: [],
+  data: { runners: { char: '', charVelocity: 5 }, clear: 'true' }
+}
+WebSocket client connected
+Received trigger: {
+  show: [ 'mic' ],
+  data: { runners: { char: '', charVelocity: 5 }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'mic' ],
+  data: { runners: { char: '', charVelocity: 5 }, clear: 'false' }
+}
+WebSocket client connected
+Received trigger: {
+  show: [ 'mic' ],
+  data: { runners: { char: '', charVelocity: 5 }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'mic' ],
+  data: { runners: { char: '', charVelocity: 5 }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'mic' ],
+  data: { runners: { char: '', charVelocity: 5 }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'mic' ],
+  data: { runners: { char: '', charVelocity: 5 }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'cucco' ],
+  data: { runners: { char: '', charVelocity: 5 }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'cucco' ],
+  data: { runners: { char: '', charVelocity: 5 }, clear: 'false' }
+}
+Received trigger: { show: [ 'mic' ], clear: false }
+Received trigger: { show: [ 'mic' ], clear: false }
+Received trigger: { show: [ 'mic' ], clear: false }
+Received trigger: { show: [ 'mic' ], clear: false }
+Received trigger: { show: [ 'mic' ], clear: false }
+Received trigger: { show: [], clear: false }
+WebSocket client connected
+Received trigger: { show: [ 'mic' ], clear: false }
+Received trigger: { show: [], clear: false }
+Received trigger: { show: [], clear: false }
+Received trigger: { show: [ 'mic' ], clear: false }
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'r2d2', charVelocity: 4 } },
+  clear: false
+}
+Received trigger: { show: [ 'cucco' ], clear: false }
+Received trigger: { show: [ 'mic' ], clear: false }
+WebSocket client connected
+Received trigger: { show: [ 'mic' ], clear: false }
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'r2d2', charVelocity: 4 } },
+  clear: false
+}
+Received trigger: { show: [ 'cucco' ], clear: false }
+Received trigger: { show: [ 'mic' ], clear: false }
+Received trigger: { show: [ 'cucco' ], clear: false }
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'r2d2', charVelocity: 4 } },
+  clear: false
+}
+Received trigger: {
+  show: [ 'runners', 'cucco' ],
+  data: { runners: { char: 'r2d2', charVelocity: 4 } },
+  clear: false
+}
+Received trigger: {
+  show: [ 'runners', 'cucco' ],
+  data: { runners: { char: 'r2d2', charVelocity: 4 } },
+  clear: false
+}
+Received trigger: {
+  show: [ 'runner' ],
+  data: { runners: { char: '', charVelocity: 5 }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'cucco' ],
+  data: { runners: { char: '', charVelocity: 5 }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'mic' ],
+  data: { runners: { char: '', charVelocity: 5 }, clear: 'false' }
+}
+WebSocket client connected
+Received trigger: {
+  show: [ 'cucco' ],
+  data: { runners: { char: '', charVelocity: 5 }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'mic' ],
+  data: { runners: { char: '', charVelocity: 5 }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'mic' ],
+  data: { runners: { char: '', charVelocity: 5 }, clear: 'false' }
+}
+WebSocket client connected
+Received trigger: {
+  show: [ 'mic' ],
+  data: { runners: { char: '', charVelocity: 5 }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'cucco' ],
+  data: { runners: { char: '', charVelocity: 5 }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'mic' ],
+  data: { runners: { char: '', charVelocity: 5 }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'mic' ],
+  data: { runners: { char: '', charVelocity: 5 }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'mic' ],
+  data: { runners: { char: '', charVelocity: 5 }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'runner' ],
+  data: { runners: { char: '', charVelocity: 5 }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'runner' ],
+  data: { runners: { char: '', charVelocity: 5 }, clear: 'false' }
+}
+Received trigger: {}
+Received trigger: {}
+Received trigger: {}
+Received trigger: {}
+Received trigger: {}
+Received trigger: {}
+Received trigger: {}
+Received trigger: {}
+Received trigger: {}
+Received trigger: {}
+Received trigger: {}
+Received trigger: {}
+Received trigger: {
+  show: [ 'mic' ],
+  data: { runners: { char: '', charVelocity: '' }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'mic' ],
+  data: { runners: { char: '', charVelocity: '' }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'runner' ],
+  data: { runners: { char: 'r2d2', charVelocity: '7' }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'cucco' ],
+  data: { runners: { char: '', charVelocity: '' }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'runner' ],
+  data: { runners: { char: 'r2d2', charVelocity: '7' }, clear: 'false' }
+}
+Received trigger: {}
+Received trigger: {
+  show: [ 'runner' ],
+  data: { runners: { char: 'r2d2', charVelocity: 7 }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'runner' ],
+  data: { runners: { char: 'r2d2', charVelocity: 7 }, clear: 'false' }
+}
+WebSocket client connected
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'r2d2', charVelocity: 7 } },
+  clear: false
+}
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'r2d2', charVelocity: 8 } },
+  clear: false
+}
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'r2d2', charVelocity: 7 }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'r2d2', charVelocity: 18 } },
+  clear: false
+}
+WebSocket client connected
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'r2d2', charVelocity: 50 } },
+  clear: false
+}
+Received trigger: { show: [ 'mic' ], clear: false }
+Received trigger: { show: [ 'mic', 'cucco' ], clear: false }
+Received trigger: { show: [ 'mic' ], clear: false }
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'r2d2', charVelocity: 50 } },
+  clear: false
+}
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'r2d2', charVelocity: 100 } },
+  clear: false
+}
+WebSocket client connected
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'r2d2', charVelocity: 7 }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'r2d2', charVelocity: 100 }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'r2d2', charVelocity: 1000 }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'murloc', charVelocity: 6 } }
+}
+WebSocket client connected
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'murloc', charVelocity: 6 } }
+}
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'murloc', charVelocity: 10 } }
+}
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'murloc', charVelocity: 10 } }
+}
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'murloc', charVelocity: 1000 } }
+}
+WebSocket client connected
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'murloc', charVelocity: 1000 } }
+}
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'murloc', charVelocity: 10 } }
+}
+WebSocket client connected
+WebSocket client connected
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'murloc', charVelocity: 10 } }
+}
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'murloc', charVelocity: 20 } }
+}
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'murloc', charVelocity: 20 } }
+}
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'murloc', charVelocity: 20 } }
+}
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'murloc', charVelocity: 15 } }
+}
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'r2d2', charVelocity: 15 } }
+}
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'r2d2', charVelocity: 12 } }
+}
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'r2d2', charVelocity: 13 } }
+}
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'r2d2', charVelocity: 13 }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'mic' ],
+  data: { runners: { char: '', charVelocity: '' }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'r2d2', charVelocity: 13 }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'cucco' ],
+  data: { runners: { char: '', charVelocity: '' }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'runners' ],
+  data: { runners: { char: 'r2d2', charVelocity: 13 }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'cucco' ],
+  data: { runners: { char: '', charVelocity: '' }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'mic' ],
+  data: { runners: { char: '', charVelocity: '' }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'mic' ],
+  data: { runners: { char: '', charVelocity: '' }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'mic' ],
+  data: { runners: { char: '', charVelocity: '' }, clear: 'false' }
+}
+Received trigger: {
+  show: [ 'mic' ],
+  data: { runners: { char: '', charVelocity: '' }, clear: 'false' }
+}
