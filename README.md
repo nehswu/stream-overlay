@@ -165,13 +165,10 @@ npm install
 npm start
 ```
 
-4. Access overlays from OBS:
-
-
-#### Browser Source URL: 
-
-    http://<pi-ip>:3000/index.html
-
+4. Access overlays from OBS browser source:
+```log
+http://<pi-ip>:3000/index.html
+```
 
 ---
 
