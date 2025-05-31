@@ -1,215 +1,190 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Cucco Raid Overlay</title>
-    <style>
-      html,
-      body {
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-        width: 100vw;
-        height: 100vh;
-        background: transparent;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <title>Cucco Raid Overlay</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      background: transparent;
+    }
 
-      #cuccoContainer {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 99999;
-      }
+    #cuccoContainer {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
 
-      .cucco-img {
-        position: absolute;
-        width: 112px;
-        height: auto;
-        pointer-events: none;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="cuccoContainer"></div>
+    .cucco-img {
+      position: absolute;
+      width: 112px;
+      height: auto;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
 
-    <script>
-      const basePath = "/assets/cucco/";
-      const numImages = 10;
-      const raidDuration = 8000;
-      let raidActive = false;
+<div id="cuccoContainer"></div>
 
-      // Asset paths
-      const sprite1 = basePath + "cucco1.gif";
-      const sprite2 = basePath + "cucco2.gif";
-      const sound1 = basePath + "cucco1.wav"; // Intro sound
-      const sound2 = basePath + "cucco2.wav"; // Ambient loop
+<script>
+  const basePath = "/assets/cucco/";
+  const numImages = 10;
+  const raidDuration = 8000; // 8 seconds
+  let raidActive = false;
 
-      let animationFrame = null;
-      let cuccoAudio = null;
-      let domReady = false;
-      let messageQueue = [];
+  // Asset paths
+  const sprite1 = basePath + "cucco1.gif";
+  const sprite2 = basePath + "cucco2.gif";
+  const sound1 = basePath + "cucco1.wav"; // Intro sound
+  const sound2 = basePath + "cucco2.wav"; // Ambient loop
 
-      function random(min, max) {
-        return Math.random() * (max - min) + min;
-      }
+  let animationFrame = null;
+  let cuccoIntroAudio = null;
+  let cuccoAmbientAudio = null;
 
-      function randomInt(min, max) {
-        return Math.floor(random(0, 2)); // Edge spawn logic
-      }
+  function random(min, max) {
+    return Math.random() * (max - min) + min;
+  }
 
-      function startCuccoRaid() {
-        if (raidActive) return;
-        raidActive = true;
+  function startCuccoRaid() {
+    if (raidActive) return;
+    raidActive = true;
 
-        const container = document.getElementById("cuccoContainer");
+    const container = document.getElementById('cuccoContainer');
 
-        for (let i = 0; i < numImages; i++) {
-          for (let imgIndex = 0; imgIndex < 2; imgIndex++) {
-            const img = document.createElement("img");
-            img.classList.add("cucco-img");
-            img.src = imgIndex === 0 ? sprite1 : sprite2;
+    for (let i = 0; i < numImages; i++) {
+      for (let imgIndex = 0; imgIndex < 2; imgIndex++) {
+        const img = document.createElement('img');
+        img.classList.add('cucco-img');
+        img.src = imgIndex === 0 ? sprite1 : sprite2;
 
-            let edge = randomInt(0, 3);
-            let angle = random(Math.PI / 4, (3 * Math.PI) / 4);
-            let speed = random(1, 6);
-            let pos = { x: 0, y: 0 };
-            let vel = { x: 0, y: 0 };
+        let edge = Math.floor(random(0, 4));
+        let angle = random(Math.PI / 4, 3 * Math.PI / 4);
+        let speed = random(1, 6);
+        let pos = { x: 0, y: 0 };
+        let vel = { x: 0, y: 0 };
 
-            if (edge === 0) {
-              pos.x = random(0, window.innerWidth);
-              pos.y = 0;
-              angle = random(Math.PI / 4, (3 * Math.PI) / 4);
-              vel.x = Math.cos(angle) * speed;
-              vel.y = Math.sin(angle) * speed;
-            } else if (edge === 1) {
-              pos.x = window.innerWidth;
-              pos.y = random(0, window.innerHeight);
-              angle = random(Math.PI / 4, (3 * Math.PI) / 4) + Math.PI / 2;
-              vel.x = Math.cos(angle) * speed;
-              vel.y = Math.sin(angle) * speed;
-            } else if (edge === 2) {
-              pos.x = random(0, window.innerWidth);
-              pos.y = window.innerHeight;
-              angle = random(Math.PI / 4, (3 * Math.PI) / 4) + Math.PI;
-              vel.x = Math.cos(angle) * speed;
-              vel.y = Math.sin(angle) * speed;
-            } else {
-              pos.x = 0;
-              pos.y = random(0, window.innerHeight);
-              angle =
-                random(Math.PI / 4, (3 * Math.PI) / 4) + (3 * Math.PI) / 2;
-              vel.x = Math.cos(angle) * speed;
-              vel.y = Math.sin(angle) * speed;
-            }
-
-            img.onload = () => {
-              img.style.top = pos.y + "px";
-              img.style.left = pos.x + "px";
-              img.style.transform = vel.x < 0 ? "scaleX(-1)" : "scaleX(1)";
-              container.appendChild(img);
-            };
-
-            // Start animation
-            function frame() {
-              pos.x += vel.x;
-              pos.y += vel.y;
-
-              if (pos.x > window.innerWidth) pos.x -= window.innerWidth;
-              if (pos.x < 0) pos.x += window.innerWidth;
-              if (pos.y > window.innerHeight) pos.y -= window.innerHeight;
-              if (pos.y < 0) pos.y += window.innerHeight;
-
-              img.style.left = pos.x + "px";
-              img.style.top = pos.y + "px";
-              img.style.transform = vel.x < 0 ? "scaleX(-1)" : "scaleX(1)";
-              animationFrame = requestAnimationFrame(frame);
-            }
-
-            animationFrame = requestAnimationFrame(frame);
-          }
+        if (edge === 0) {
+          pos.x = random(0, window.innerWidth);
+          pos.y = 0;
+          angle = random(Math.PI / 4, 3 * Math.PI / 4);
+          vel.x = Math.cos(angle) * speed;
+          vel.y = Math.sin(angle) * speed;
+        } else if (edge === 1) {
+          pos.x = window.innerWidth;
+          pos.y = random(0, window.innerHeight);
+          angle = random(Math.PI / 4, 3 * Math.PI / 4) + Math.PI / 2;
+          vel.x = Math.cos(angle) * speed;
+          vel.y = Math.sin(angle) * speed;
+        } else if (edge === 2) {
+          pos.x = random(0, window.innerWidth);
+          pos.y = window.innerHeight;
+          angle = random(Math.PI / 4, 3 * Math.PI / 4) + Math.PI;
+          vel.x = Math.cos(angle) * speed;
+          vel.y = Math.sin(angle) * speed;
+        } else {
+          pos.x = 0;
+          pos.y = random(0, window.innerHeight);
+          angle = random(Math.PI / 4, 3 * Math.PI / 4) + 3 * Math.PI / 2;
+          vel.x = Math.cos(angle) * speed;
+          vel.y = Math.sin(angle) * speed;
         }
 
-        // Play intro sound
-        const introSound = new Audio(sound1);
-        introSound.volume = 0.8;
-        introSound.playbackRate = 1.0;
-
-        introSound.onended = () => {
-          playAmbientSound();
+        img.onload = () => {
+          img.style.top = pos.y + "px";
+          img.style.left = pos.x + "px";
+          img.style.transform = vel.x < 0 ? 'scaleX(-1)' : 'scaleX(1)';
+          container.appendChild(img);
         };
 
-        introSound.play().catch((e) => {
-          console.error("Intro sound failed:", e);
-          playAmbientSound();
-        });
+        function frame() {
+          pos.x += vel.x;
+          pos.y += vel.y;
 
-        function playAmbientSound() {
-          cuccoAudio = new Audio(sound2);
-          cuccoAudio.volume = random(0.5, 1.0);
-          cuccoAudio.playbackRate = random(0.9, 1.15);
+          if (pos.x > window.innerWidth) pos.x -= window.innerWidth;
+          if (pos.x < 0) pos.x += window.innerWidth;
+          if (pos.y > window.innerHeight) pos.y -= window.innerHeight;
+          if (pos.y < 0) pos.y += window.innerHeight;
 
-          cuccoAudio.play().catch((e) => {
-            console.error("Ambient sound failed:", e);
-          });
-
-          cuccoAudio.onended = () => {
-            const nextDelay = random(300, 1000);
-            setTimeout(playAmbientSound, nextDelay);
-          };
+          img.style.left = pos.x + "px";
+          img.style.top = pos.y + "px";
+          img.style.transform = vel.x < 0 ? 'scaleX(-1)' : 'scaleX(1)';
+          animationFrame = requestAnimationFrame(frame);
         }
 
-        // Stop everything after 8 seconds
-        setTimeout(() => {
-          stopCuccoRaid();
-        }, raidDuration);
+        animationFrame = requestAnimationFrame(frame);
       }
+    }
 
-      function stopCuccoRaid() {
-        raidActive = false;
+    // Play intro sound
+    cuccoIntroAudio = new Audio(sound1);
+    cuccoIntroAudio.volume = 0.8;
+    cuccoIntroAudio.play().catch(e => console.error("Intro sound error:", e));
 
-        document.getElementById("cuccoContainer").innerHTML = "";
-        document.body.style.display = "none";
+    // Then play ambient sound
+    cuccoIntroAudio.onended = () => {
+      playAmbientSound();
+    };
 
-        if (animationFrame) {
-          cancelAnimationFrame(animationFrame);
-          animationFrame = null;
-        }
+    // Auto-stop after 8s
+    setTimeout(() => {
+      stopCuccoRaid();
+    }, raidDuration);
+  }
 
-        if (cuccoAudio) {
-          cuccoAudio.pause();
-          cuccoAudio.currentTime = 0;
-          cuccoAudio = null;
-        }
+  function playAmbientSound() {
+    cuccoAmbientAudio = new Audio(sound2);
+    cuccoAmbientAudio.loop = true;
+    cuccoAmbientAudio.volume = random(0.5, 1.0);
+    cuccoAmbientAudio.playbackRate = random(0.9, 1.15);
+
+    cuccoAmbientAudio.play().catch(e => {
+      console.error("Ambient sound error:", e.message);
+    });
+  }
+
+  function stopCuccoRaid() {
+    const container = document.getElementById('cuccoContainer');
+    if (container) container.innerHTML = '';
+    document.body.style.display = 'none';
+    raidActive = false;
+
+    // Stop all sounds immediately
+    if (cuccoIntroAudio) {
+      cuccoIntroAudio.pause();
+      cuccoIntroAudio = null;
+    }
+
+    if (cuccoAmbientAudio) {
+      cuccoAmbientAudio.pause();
+      cuccoAmbientAudio.currentTime = 0;
+      cuccoAmbientAudio = null;
+    }
+
+    if (animationFrame) {
+      cancelAnimationFrame(animationFrame);
+      animationFrame = null;
+    }
+  }
+
+  window.addEventListener('message', function(event) {
+    const msg = event.data;
+
+    if (msg.overlay === 'cucco') {
+      if (msg.show) {
+        document.body.style.display = 'block';
+        startCuccoRaid();
+      } else {
+        stopCuccoRaid();
       }
+    }
+  });
+</script>
 
-      // Message handler
-      window.addEventListener("message", function (event) {
-        console.log("Cucco overlay received:", event.data);
-        messageQueue.push(event.data);
-        processQueue();
-      });
-
-      window.addEventListener("DOMContentLoaded", () => {
-        domReady = true;
-        processQueue();
-      });
-
-      function processQueue() {
-        while (messageQueue.length > 0) {
-          const msg = messageQueue.shift();
-
-          if (msg.overlay === "cucco") {
-            document.body.style.display = msg.show ? "block" : "none";
-            if (msg.show) startCuccoRaid();
-            else stopCuccoRaid();
-          }
-        }
-      }
-
-      // Tell index.html that we're ready
-      window.parent.postMessage({ overlay: "cucco", ready: true }, "*");
-    </script>
-  </body>
+</body>
 </html>
