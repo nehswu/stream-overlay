@@ -207,6 +207,9 @@
           }
         }
       }
+
+      // Tell index.html that we're ready
+      window.parent.postMessage({ overlay: "cucco", ready: true }, "*");
     </script>
   </body>
 </html>

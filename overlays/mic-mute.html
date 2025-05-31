@@ -80,6 +80,9 @@
         console.log("DOM loaded in mic overlay");
         processQueue(); // Process any early messages
       });
+
+      // Tell index.html that we're ready
+      window.parent.postMessage({ overlay: "mic", ready: true }, "*");
     </script>
   </body>
 </html>

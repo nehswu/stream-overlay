@@ -187,6 +187,9 @@
           }
         }
       }
+
+      // Tell index.html that we're ready
+      window.parent.postMessage({ overlay: "runners", ready: true }, "*");
     </script>
   </body>
 </html>
