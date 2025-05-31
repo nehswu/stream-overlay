@@ -34,6 +34,6 @@ app.post('/trigger', express.json(), (req, res) => {
 
 // Start server
 const PORT = 3000;
-http.listen(PORT, () => {
+http.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running at http://localhost:${PORT}/`);
 });
