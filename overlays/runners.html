@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Runners Overlay</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      background: transparent;
+    }
+
+    #runnerContainer {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+
+<div id="runnerContainer"></div>
+
+<script>
+  // Configuration
+  const basePath = "../assets/runners/";
+  const validCharacters = ['r2d2', 'murloc'];
+  let currentCharacter = null;
+
+  // Animation state
+  let animationFrame = null;
+  let currentAudio = null;
+  let currentSpeed = null;
+
+  function loadImageAndAnimate(character, charVelocity) {
+    if (!validCharacters.includes(character)) return cleanup();
+
+    // Only restart if character or speed changes
+    if (currentCharacter === character && currentSpeed === charVelocity) return;
+
+    cleanup();
+
+    const imageSrc = `${basePath}${character}.gif`;
+    const audioSrc = `${basePath}${character}.mp3`;
+
+    const img = document.createElement('img');
+    img.src = imageSrc;
+    img.style.position = 'absolute';
+    img.style.height = '200px';
+    img.style.pointerEvents = 'none';
+
+    const aspectRatio = 1; // Replace with real ratio if needed
+    img.style.width = (200 * aspectRatio) + "px";
+
+    // Clamp velocity to reasonable bounds if desired
+    const velocity = Math.max(1, Math.min(10, charVelocity || 4)); // Default to 4 if not provided
+
+    const direction = Math.random() < 0.5 ? 1 : -1;
+    const pos = {
+      x: direction === 1 ? -img.width : window.innerWidth,
+      y: window.innerHeight - 200 - 5
+    };
+    const vel = { x: direction * velocity, y: 0 };
+
+    img.onload = () => {
+      img.style.top = pos.y + 'px';
+      img.style.left = pos.x + 'px';
+      img.style.transform = vel.x < 0 ? 'scaleX(-1)' : 'scaleX(1)';
+      document.getElementById('runnerContainer').appendChild(img);
+
+      animate(img, pos, vel);
+      playAudio(audioSrc);
+    };
+
+    img.onerror = () => {
+      console.error("Failed to load runner image:", imageSrc);
+    };
+
+    currentCharacter = character;
+    currentSpeed = velocity;
+    document.body.style.display = 'block';
+  }
+
+  function animate(img, pos, vel) {
+    function frame() {
+      pos.x += vel.x;
+
+      if (vel.x > 0 && pos.x > window.innerWidth) {
+        img.remove();
+        cancelAnimationFrame(animationFrame);
+        return;
+      } else if (vel.x < 0 && pos.x < -img.offsetWidth) {
+        img.remove();
+        cancelAnimationFrame(animationFrame);
+        return;
+      }
+
+      img.style.left = pos.x + "px";
+      img.style.transform = vel.x < 0 ? 'scaleX(-1)' : 'scaleX(1)';
+      animationFrame = requestAnimationFrame(frame);
+    }
+
+    cancelAnimationFrame(animationFrame);
+    animationFrame = requestAnimationFrame(frame);
+  }
+
+  function playAudio(src) {
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+    }
+
+    currentAudio = new Audio(src);
+    currentAudio.volume = 1.0;
+
+    currentAudio.play().catch(e => {
+      console.error("Error playing runner sound:", e.message);
+    });
+  }
+
+  function cleanup() {
+    document.getElementById('runnerContainer').innerHTML = '';
+    document.body.style.display = 'none';
+
+    if (animationFrame) {
+      cancelAnimationFrame(animationFrame);
+      animationFrame = null;
+    }
+
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+      currentAudio = null;
+    }
+
+    currentCharacter = null;
+    currentSpeed = null;
+  }
+
+  // Listen for messages from index.html
+  window.addEventListener('message', function(event) {
+    try {
+      const msg = event.data;
+
+      if (msg.overlay !== 'runners') return;
+
+      if (msg.show && msg.data && msg.data.char && validCharacters.includes(msg.data.char)) {
+        const velocity = msg.data.charVelocity || 4; // ← Parameter renamed to charVelocity
+        loadImageAndAnimate(msg.data.char, velocity); // No fallback here – handled above
+      } else {
+        cleanup();
+      }
+
+    } catch (e) {
+      cleanup();
+    }
+  });
+</script>
+
+</body>
+</html>

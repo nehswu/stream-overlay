@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <title>Mic Mute Overlay</title>
   <style>
     html, body {
       margin: 0;
@@ -13,37 +14,52 @@
     }
 
     .mic-container {
-      position: absolute;
+      position: fixed;
       bottom: 100px;
       left: 50%;
       transform: translateX(-50%);
-      z-index: 1000;
+      z-index: 99999;
       width: 100px;
       height: 100px;
+      display: none;
+      animation: pulse 2.5s infinite ease-in-out;
     }
 
     .mic-container img {
       width: 100px;
       height: 100px;
       object-fit: cover;
+      pointer-events: none;
     }
 
     @keyframes pulse {
-      0% { transform: translateX(-50%) scale(1); }
-      50% { transform: translateX(-50%) scale(1.25); }
+      0%   { transform: translateX(-50%) scale(1); }
+      50%  { transform: translateX(-50%) scale(1.25); }
       100% { transform: translateX(-50%) scale(1); }
-    }
-
-    .mic-container.pulse {
-      animation: pulse 2.5s infinite ease-in-out;
     }
   </style>
 </head>
 <body>
 
-  <div class="mic-container pulse">
-    <img src="../assets/mic-mute.png" alt="Mic Mute" />
-  </div>
+<div class="mic-container" id="micMute">
+  <img src="../assets/mic-mute.png" alt="Mic Mute" />
+</div>
+
+<script>
+  const mic = document.getElementById('micMute');
+
+  window.addEventListener('message', function(event) {
+    const msg = event.data;
+
+    if (msg.overlay !== 'mic') return;
+
+    if (msg.show) {
+      mic.style.display = 'block';
+    } else {
+      mic.style.display = 'none';
+    }
+  });
+</script>
 
 </body>
 </html>

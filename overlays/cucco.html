@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <title>Cucco Raid Overlay</title>
   <style>
     html, body {
       margin: 0;
@@ -11,39 +12,31 @@
       height: 100vh;
       background: transparent;
     }
+
+    #cuccoContainer {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
   </style>
 </head>
 <body>
 
-<div id="cucco" style="position: relative; width: 100%; height: 100%;"></div>
+<div id="cuccoContainer"></div>
 
 <script>
-  // Prevent double execution
-  if (window.cuccoInitialized) {
-    console.log("Cucco overlay already initialized.");
-    document.body.style.display = 'none';
-    throw new Error("Already running");
-  }
-  window.cuccoInitialized = true;
-
-  // Cleanup previous timers/loops
-  if (window.cuccoAnimationFrame) cancelAnimationFrame(window.cuccoAnimationFrame);
-  if (window.cuccoAudioTimer) clearTimeout(window.cuccoAudioTimer);
-
-  // === Simulation Variables ===
-  const movers = [];
+  const basePath = "../assets/cucco/";
   const numImages = 10;
-  const raidDuration = 12000; // 8 seconds
-  let audioPlaying = false;
+  const raidDuration = 8000; // 8 seconds
   let raidStartTime = 0;
+  let raidActive = false;
 
-  // Asset paths
-  const sprite1 = "../assets/cucco/cucco1.gif";
-  const sprite2 = "../assets/cucco/cucco2.gif";
-  const sound1 = "../assets/cucco/cucco1.wav"; // Intro
-  const sound2 = "../assets/cucco/cucco2.wav"; // Looping
+  // Asset paths (GIFs)
+  const sprite1 = basePath + "cucco1.gif";
+  const sprite2 = basePath + "cucco2.gif";
+  const sound1 = basePath + "cucco1.wav"; // Intro sound
+  const sound2 = basePath + "cucco2.wav"; // Looping ambient sound
 
-  // Random helpers
   function random(min, max) {
     return Math.random() * (max - min) + min;
   }
@@ -52,8 +45,10 @@
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
-  // Initialize moving objects
   function initializeMovers() {
+    const cuccoContainer = document.getElementById('cuccoContainer');
+    const movers = [];
+
     for (let i = 0; i < numImages; i++) {
       for (let imgIndex = 0; imgIndex < 2; imgIndex++) {
         const img = document.createElement('img');
@@ -62,8 +57,8 @@
         img.style.width = '112px';
         img.style.height = 'auto';
         img.style.pointerEvents = 'none';
-        document.getElementById('cucco').appendChild(img);
 
+        // Random edge spawn
         let edge = randomInt(0, 3);
         let angle = random(Math.PI / 4, 3 * Math.PI / 4);
         let pos = { x: 0, y: 0 };
@@ -96,124 +91,115 @@
           vel.y = Math.sin(angle) * speed;
         }
 
-        img.style.left = pos.x + 'px';
-        img.style.top = pos.y + 'px';
+        img.onload = () => {
+          img.style.top = pos.y + 'px';
+          img.style.left = pos.x + 'px';
+          cuccoContainer.appendChild(img);
+        };
 
-        movers.push({ img, pos, vel, imgIndex });
+        movers.push({ img, pos, vel });
       }
     }
+
+    return movers;
   }
 
-  // Animation loop
-  function animate() {
-    for (let mover of movers) {
-      mover.pos.x += mover.vel.x;
-      mover.pos.y += mover.vel.y;
+  function animate(movers) {
+    function frame() {
+      for (let mover of movers) {
+        mover.pos.x += mover.vel.x;
+        mover.pos.y += mover.vel.y;
 
-      if (mover.pos.x > window.innerWidth) mover.pos.x -= window.innerWidth;
-      if (mover.pos.x < 0) mover.pos.x += window.innerWidth;
-      if (mover.pos.y > window.innerHeight) mover.pos.y -= window.innerHeight;
-      if (mover.pos.y < 0) mover.pos.y += window.innerHeight;
+        if (mover.pos.x > window.innerWidth) mover.pos.x -= window.innerWidth;
+        if (mover.pos.x < 0) mover.pos.x += window.innerWidth;
+        if (mover.pos.y > window.innerHeight) mover.pos.y -= window.innerHeight;
+        if (mover.pos.y < 0) mover.pos.y += window.innerHeight;
 
-      mover.img.style.left = mover.pos.x + 'px';
-      mover.img.style.top = mover.pos.y + 'px';
-      mover.img.style.transform = mover.vel.x < 0 ? 'scaleX(-1)' : 'scaleX(1)';
+        mover.img.style.left = mover.pos.x + 'px';
+        mover.img.style.top = mover.pos.y + 'px';
+        mover.img.style.transform = mover.vel.x < 0 ? 'scaleX(-1)' : 'scaleX(1)';
+      }
+
+      requestAnimationFrame(frame);
     }
 
-    window.cuccoAnimationFrame = requestAnimationFrame(animate);
+    requestAnimationFrame(frame);
   }
 
-  // Audio management
-  function startAudio() {
-    playIntroSound();
-  }
+  function playIntroSound(soundSrc) {
+    const introSound = new Audio(soundSrc);
+    introSound.volume = 0.8;
+    introSound.playbackRate = 1.0;
 
-  function playIntroSound() {
-    const sound = new Audio(sound1);
-    sound.volume = 0.8;
-    sound.playbackRate = 1.0;
-
-    sound.play().catch(e => {
+    introSound.play().catch(e => {
       console.error("Error playing intro audio:", e);
-      startMainAudioAndAnimation();
     });
 
-    sound.onended = () => {
-      startMainAudioAndAnimation();
+    introSound.onended = () => {
+      playAmbientSound();
     };
   }
 
-  function startMainAudioAndAnimation() {
-    audioPlaying = true;
-    raidStartTime = Date.now();
-    playSound();
-    animate();
-    setupRaidEndTimer(); // Start timer to end raid after 8 seconds
-  }
+  function playAmbientSound() {
+    const ambientSound = new Audio(sound2);
+    ambientSound.volume = random(0.5, 1.0);
+    ambientSound.playbackRate = random(0.9, 1.15);
 
-  function playSound() {
-    if (!audioPlaying) return;
-
-    const elapsed = Date.now() - raidStartTime;
-    if (elapsed >= raidDuration) {
-      audioPlaying = false;
-      return;
-    }
-
-    const sound = new Audio(sound2);
-    sound.volume = random(0.5, 1.0);
-    sound.playbackRate = random(0.9, 1.15);
-
-    sound.play().catch(e => {
-      console.error("Error playing audio:", e);
+    ambientSound.play().catch(e => {
+      console.error("Error playing ambient audio:", e);
     });
 
-    sound.onended = () => {
-      const currentElapsed = Date.now() - raidStartTime;
-      if (currentElapsed >= raidDuration) {
-        audioPlaying = false;
-        return;
-      }
+    ambientSound.onended = () => {
+      if (!raidActive) return;
 
       const delay = random(300, 1000);
-      window.cuccoAudioTimer = setTimeout(playSound, delay);
+      setTimeout(() => {
+        playAmbientSound();
+      }, delay);
     };
   }
 
-  function setupRaidEndTimer() {
+  function startCuccoRaid() {
+    if (raidActive) return;
+
+    raidActive = true;
+    raidStartTime = Date.now();
+
+    const movers = initializeMovers();
+    animate(movers);
+    playIntroSound(sound1);
+
+    // Stop everything after 8 seconds
     setTimeout(() => {
-      console.log("Ending cucco raid after 8 seconds.");
-
-      // Stop animation
-      if (window.cuccoAnimationFrame) {
-        cancelAnimationFrame(window.cuccoAnimationFrame);
-      }
-
-      // Stop audio
-      if (window.cuccoAudioTimer) {
-        clearTimeout(window.cuccoAudioTimer);
-      }
-      audioPlaying = false;
-
-      // Optional: Remove all images from screen
-      movers.forEach(mover => {
-        mover.img.remove();
-      });
-
-      // You can also hide the container if needed
-      // document.body.style.display = 'none';
+      stopCuccoRaid();
     }, raidDuration);
   }
 
-  // Set document styles
-  document.body.style.margin = '0';
-  document.body.style.padding = '0';
-  document.body.style.overflow = 'hidden';
-  document.body.style.background = 'transparent';
+  function stopCuccoRaid() {
+    raidActive = false;
 
-  // Start the simulation
-  initializeMovers();
-  startAudio();
+    document.getElementById('cuccoContainer').innerHTML = '';
+    document.body.style.display = 'none';
+  }
+
+  // Listen for postMessage from index.html
+  window.addEventListener('message', function(event) {
+    try {
+      const msg = event.data;
+
+      if (msg.overlay !== 'cucco') return;
+
+      if (msg.show) {
+        document.body.style.display = 'block';
+        startCuccoRaid();
+      } else {
+        stopCuccoRaid();
+      }
+
+    } catch (e) {
+      stopCuccoRaid();
+    }
+  });
 </script>
 
 </body>

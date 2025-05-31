@@ -1,63 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Modular Overlay System</title>
-    <style>
-      html,
-      body {
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-        width: 100vw;
-        height: 100vh;
-        background: transparent;
-        position: relative;
-      }
-      iframe {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        border: none;
-        pointer-events: none;
-      }
-    </style>
-    <link rel="icon" href="data:," />
-    <!-- Prevents favicon 404 -->
-  </head>
-  <body>
-    <!-- Dynamic Overlays Will Be Injected Here -->
-    <div id="overlayContainer"></div>
+<head>
+  <meta charset="UTF-8" />
+  <title>Modular Overlay System</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      background: transparent;
+      position: relative;
+    }
 
-    <!-- Placeholder if no overlay is active -->
-    <div id="placeholder" style="display: block"></div>
+    iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      pointer-events: none;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
 
-    <script>
-      const urlParams = new URLSearchParams(window.location.search);
+<!-- Dynamic Overlays Container -->
+<div id="overlayContainer"></div>
 
-      // Map query params to overlay files
-      const overlayMap = {
-        mic: "overlays/mic-mute.html",
-        runner: "overlays/runner.html",
-        cucco: "overlays/cucco.html", // <-- Add this line
-      };
+<!-- Placeholder if no overlay is active -->
+<div id="placeholder" style="display: block;">No overlay active</div>
 
-      Object.entries(overlayMap).forEach(([param, filePath]) => {
-        if (urlParams.get(param) === "true") {
-          // Append full query string to iframe src
-          const iframe = document.createElement("iframe");
-          iframe.src = `${filePath}?${urlParams.toString()}`;
+<script>
+  const overlayMap = {
+    'mic': 'overlays/mic-mute.html',
+    'cucco': 'overlays/cucco.html',
+    'runners': 'overlays/runners.html'
+  };
 
-          // Hide placeholder
-          const placeholder = document.getElementById("placeholder");
-          if (placeholder) placeholder.style.display = "none";
+  const loadedOverlays = {};
 
-          document.body.appendChild(iframe);
-        }
+  // Send message to overlay
+  function sendOverlayMessage(name, message) {
+    const iframe = loadedOverlays[name];
+    if (!iframe || !iframe.contentWindow) return;
+
+    iframe.contentWindow.postMessage(message, '*');
+  }
+
+  // Connect to WebSocket
+  const ws = new WebSocket('ws://localhost:3000');
+
+  ws.onmessage = function(event) {
+    try {
+      const data = JSON.parse(event.data);
+      const overlaysToShow = Array.isArray(data.show) ? data.show : [];
+
+      console.log("Received trigger:", data);
+
+      Object.keys(overlayMap).forEach(name => {
+        const show = overlaysToShow.includes(name);
+        const payload = {
+          overlay: name,
+          show: show,
+          data: data.data?.[name] || null
+        };
+
+        sendOverlayMessage(name, payload);
       });
-    </script>
-  </body>
+
+      // Optional: Hide placeholder
+      document.getElementById('placeholder').style.display =
+        overlaysToShow.length > 0 ? 'none' : 'block';
+
+    } catch (e) {
+      console.error("Error parsing WebSocket message", e);
+    }
+  };
+
+  // Preload overlays on page load
+  function preloadOverlay(name) {
+    const iframe = document.createElement('iframe');
+    iframe.id = `overlay-${name}`;
+    iframe.name = name;
+    iframe.style.zIndex = 1000 + Object.keys(loadedOverlays).length;
+    iframe.src = overlayMap[name];
+
+    iframe.onload = () => {
+      loadedOverlays[name] = iframe;
+      console.log(`[index.html] Overlay preloaded: ${name}`);
+    };
+
+    document.body.appendChild(iframe);
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    Object.keys(overlayMap).forEach(preloadOverlay);
+  });
+</script>
+
+</body>
 </html>

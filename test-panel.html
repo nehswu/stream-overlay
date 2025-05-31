@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Overlay Control Panel</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background: #1e1e1e;
+        color: #fff;
+      }
+      h2 {
+        margin-top: 0;
+      }
+      label {
+        display: block;
+        margin-bottom: 10px;
+      }
+      button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      .section {
+        margin-bottom: 20px;
+      }
+      select {
+        margin-left: 10px;
+      }
+      small {
+        display: block;
+        margin-top: 5px;
+        color: #ccc;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Overlay Control Panel</h2>
+
+    <div class="section">
+      <label><input type="checkbox" id="micToggle" /> Mic Mute</label>
+    </div>
+
+    <div class="section">
+      <label><input type="checkbox" id="cuccoToggle" /> Cucco Raid</label>
+    </div>
+
+    <div class="section">
+      <label><input type="checkbox" id="runnersToggle" /> Runners</label>
+      <select id="runnerChar">
+        <option value="r2d2">R2D2</option>
+        <option value="murloc">Murloc</option>
+      </select>
+    </div>
+
+    <label
+      ><input type="checkbox" id="autoSendCheck" /> Auto-send on change</label
+    >
+    <small>When checked, changes will trigger instantly</small>
+
+    <button onclick="sendTrigger()">Send Trigger</button>
+    <button onclick="clearAll()">Clear All</button>
+
+    <script>
+      function getSelectedOverlays() {
+        const showList = [];
+        const data = {};
+
+        const mic = document.getElementById("micToggle").checked;
+        const cucco = document.getElementById("cuccoToggle").checked;
+        const runners = document.getElementById("runnersToggle").checked;
+
+        if (mic) showList.push("mic");
+        if (cucco) showList.push("cucco");
+        if (runners) {
+          showList.push("runners");
+          data.runners = {
+            char: document.getElementById("runnerChar").value,
+            charVelocity: 7,
+          };
+        }
+
+        return {
+          show: showList,
+          data: Object.keys(data).length > 0 ? data : undefined,
+          clear: true,
+        };
+      }
+
+      function sendTrigger(delay = 0) {
+        const payload = getSelectedOverlays();
+
+        setTimeout(() => {
+          fetch("http://localhost:3000/trigger", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          })
+            .then(() => {
+              console.log("Trigger sent:", payload);
+            })
+            .catch((err) => {
+              console.error("Error sending trigger:", err);
+            });
+        }, delay);
+      }
+
+      function clearAll() {
+        const payload = { show: [], clear: true };
+
+        fetch("http://localhost:3000/trigger", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        })
+          .then(() => {
+            console.log("Cleared all overlays");
+          })
+          .catch((err) => {
+            console.error("Error clearing overlays:", err);
+          });
+      }
+
+      // Optional: Auto-send when checkbox/select changes
+      document
+        .getElementById("autoSendCheck")
+        .addEventListener("change", function (e) {
+          const autoSendEnabled = e.target.checked;
+
+          document
+            .querySelectorAll('input[type="checkbox"], select')
+            .forEach((el) => {
+              el.removeEventListener("change", sendOnAutoChange);
+              if (autoSendEnabled) {
+                el.addEventListener("change", sendOnAutoChange);
+              }
+            });
+        });
+
+      function sendOnAutoChange() {
+        sendTrigger(300); // Small delay helps prevent early triggers
+      }
+
+      // Initialize
+      document
+        .getElementById("autoSendCheck")
+        .dispatchEvent(new Event("change"));
+    </script>
+  </body>
+</html>
