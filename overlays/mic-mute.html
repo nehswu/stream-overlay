@@ -1,65 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Mic Mute Overlay</title>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      width: 100vw;
-      height: 100vh;
-      background: transparent;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <title>Mic Mute Overlay</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        width: 100vw;
+        height: 100vh;
+        background: transparent;
+      }
 
-    .mic-container {
-      position: fixed;
-      bottom: 100px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 99999;
-      width: 100px;
-      height: 100px;
-      display: none;
-      animation: pulse 2.5s infinite ease-in-out;
-    }
+      .mic-container {
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 99999;
+        width: 100px;
+        height: 100px;
+        display: none;
+        animation: pulse 2.5s infinite ease-in-out;
+      }
 
-    .mic-container img {
-      width: 100px;
-      height: 100px;
-      object-fit: cover;
-      pointer-events: none;
-    }
+      .mic-container img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        pointer-events: none;
+      }
 
-    @keyframes pulse {
-      0%   { transform: translateX(-50%) scale(1); }
-      50%  { transform: translateX(-50%) scale(1.25); }
-      100% { transform: translateX(-50%) scale(1); }
-    }
-  </style>
-</head>
-<body>
+      @keyframes pulse {
+        0% {
+          transform: translateX(-50%) scale(1);
+        }
+        50% {
+          transform: translateX(-50%) scale(1.25);
+        }
+        100% {
+          transform: translateX(-50%) scale(1);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="mic-container" id="micMute">
+      <img src="/assets/mic-mute.png" alt="Mic Mute" />
+    </div>
 
-<div class="mic-container" id="micMute">
-  <img src="../assets/mic-mute.png" alt="Mic Mute" />
-</div>
+    <script>
+      const mic = document.getElementById("micMute");
+      let messageQueue = [];
 
-<script>
-  const mic = document.getElementById('micMute');
+      // Buffer messages until DOM is ready
+      window.addEventListener("message", function (event) {
+        console.log("Mic overlay received:", event.data);
+        messageQueue.push(event.data);
+        processQueue();
+      });
 
-  window.addEventListener('message', function(event) {
-    const msg = event.data;
+      function processQueue() {
+        if (!mic || messageQueue.length === 0) return;
 
-    if (msg.overlay !== 'mic') return;
+        const msg = messageQueue.shift();
 
-    if (msg.show) {
-      mic.style.display = 'block';
-    } else {
-      mic.style.display = 'none';
-    }
-  });
-</script>
+        if (msg.overlay === "mic") {
+          mic.style.display = msg.show ? "block" : "none";
+          console.log(
+            "Mic container display set to:",
+            msg.show ? "block" : "none"
+          );
+        }
+      }
 
-</body>
+      window.addEventListener("DOMContentLoaded", () => {
+        console.log("DOM loaded in mic overlay");
+        processQueue(); // Process any early messages
+      });
+    </script>
+  </body>
 </html>

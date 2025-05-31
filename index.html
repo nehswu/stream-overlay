@@ -1,106 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Modular Overlay System</title>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      width: 100vw;
-      height: 100vh;
-      background: transparent;
-      position: relative;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <title>Modular Overlay System</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        width: 100vw;
+        height: 100vh;
+        background: transparent;
+        position: relative;
+      }
 
-    iframe {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      border: none;
-      pointer-events: none;
-      z-index: 1000;
-    }
-  </style>
-</head>
-<body>
+      iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+        pointer-events: none;
+        z-index: 99999;
+        visibility: visible !important;
+        opacity: 1 !important;
+        display: block !important;
+      }
 
-<!-- Dynamic Overlays Container -->
-<div id="overlayContainer"></div>
+      .hidden {
+        visibility: hidden;
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Dynamic Overlays Container -->
+    <div id="overlayContainer"></div>
 
-<!-- Placeholder if no overlay is active -->
-<div id="placeholder" style="display: block;">No overlay active</div>
+    <!-- Placeholder if no overlay is active -->
+    <div id="placeholder" style="display: block">No overlay active</div>
 
-<script>
-  const overlayMap = {
-    'mic': 'overlays/mic-mute.html',
-    'cucco': 'overlays/cucco.html',
-    'runners': 'overlays/runners.html'
-  };
+    <script>
+      const overlayMap = {
+        mic: "overlays/mic-mute.html",
+        runners: "overlays/runners.html",
+        cucco: "overlays/cucco.html",
+      };
 
-  const loadedOverlays = {};
+      const loadedOverlays = {};
 
-  // Send message to overlay
-  function sendOverlayMessage(name, message) {
-    const iframe = loadedOverlays[name];
-    if (!iframe || !iframe.contentWindow) return;
+      function sendOverlayMessage(name, message) {
+        const iframe = loadedOverlays[name];
+        if (!iframe || !iframe.contentWindow) return;
 
-    iframe.contentWindow.postMessage(message, '*');
-  }
+        console.log(`[index.html] Sending to ${name}:`, message);
+        iframe.contentWindow.postMessage(message, "*");
+      }
 
-  // Connect to WebSocket
-  const ws = new WebSocket('ws://localhost:3000');
+      function preloadOverlay(name) {
+        const iframe = document.createElement("iframe");
+        iframe.id = `overlay-${name}`;
+        iframe.name = name;
+        iframe.style.zIndex = 1000 + Object.keys(loadedOverlays).length;
+        iframe.classList.add("hidden");
+        iframe.src = overlayMap[name];
 
-  ws.onmessage = function(event) {
-    try {
-      const data = JSON.parse(event.data);
-      const overlaysToShow = Array.isArray(data.show) ? data.show : [];
-
-      console.log("Received trigger:", data);
-
-      Object.keys(overlayMap).forEach(name => {
-        const show = overlaysToShow.includes(name);
-        const payload = {
-          overlay: name,
-          show: show,
-          data: data.data?.[name] || null
+        iframe.onload = () => {
+          console.log(`[index.html] Overlay preloaded: ${name}`);
+          loadedOverlays[name] = iframe;
+          iframe.contentWindow.postMessage({ overlay: name, show: false }, "*");
         };
 
-        sendOverlayMessage(name, payload);
+        document.body.appendChild(iframe);
+      }
+
+      // Connect to WebSocket
+      const ws = new WebSocket("ws://localhost:3000");
+
+      ws.onmessage = function (event) {
+        try {
+          const data = JSON.parse(event.data);
+          const overlaysToShow = Array.isArray(data.show) ? data.show : [];
+
+          console.log("[index.html] Received trigger:", data);
+
+          // Send postMessage to each overlay
+          Object.keys(overlayMap).forEach((name) => {
+            const show = overlaysToShow.includes(name);
+            const payload = {
+              overlay: name,
+              show: show,
+              data: data.data?.[name] || null,
+            };
+
+            sendOverlayMessage(name, payload);
+          });
+
+          // Optional: hide placeholder
+          document.getElementById("placeholder").style.display =
+            overlaysToShow.length > 0 ? "none" : "block";
+        } catch (e) {
+          console.error("Error parsing WebSocket message", e);
+        }
+      };
+
+      // Preload overlays on page load
+      window.addEventListener("DOMContentLoaded", () => {
+        Object.keys(overlayMap).forEach(preloadOverlay);
       });
-
-      // Optional: Hide placeholder
-      document.getElementById('placeholder').style.display =
-        overlaysToShow.length > 0 ? 'none' : 'block';
-
-    } catch (e) {
-      console.error("Error parsing WebSocket message", e);
-    }
-  };
-
-  // Preload overlays on page load
-  function preloadOverlay(name) {
-    const iframe = document.createElement('iframe');
-    iframe.id = `overlay-${name}`;
-    iframe.name = name;
-    iframe.style.zIndex = 1000 + Object.keys(loadedOverlays).length;
-    iframe.src = overlayMap[name];
-
-    iframe.onload = () => {
-      loadedOverlays[name] = iframe;
-      console.log(`[index.html] Overlay preloaded: ${name}`);
-    };
-
-    document.body.appendChild(iframe);
-  }
-
-  window.addEventListener('DOMContentLoaded', () => {
-    Object.keys(overlayMap).forEach(preloadOverlay);
-  });
-</script>
-
-</body>
+    </script>
+  </body>
 </html>
